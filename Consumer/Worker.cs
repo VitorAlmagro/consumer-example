@@ -26,24 +26,25 @@ namespace Consumer
 
             try
             {
-                using (var server = new ResponseSocket("@tcp://localhost:5556")) // bind
-                using (var client = new RequestSocket(">tcp://localhost:5556"))  // connect
+                string topic = "";
+                string connectionString = "tcp://localhost:12345";
+
+                _log.LogInformation($"Subscriber started for Topic : {topic}");
+
+                using (var subSocket = new SubscriberSocket())
                 {
-                    // Send a message from the client socket
-                    client.SendFrame("Hello");
+                    subSocket.Options.ReceiveHighWatermark = 1000;
+                    subSocket.Connect(connectionString);
+                    subSocket.Subscribe(topic);
 
-                    // Receive the message from the server socket
-                    string m1 = server.ReceiveFrameString();
-                    Console.WriteLine();
+                    _log.LogInformation("Subscriber socket connecting...");
 
-                    _consumerApplicationService.ProcessMessage($"From Client: {m1}");
-
-                    // Send a response back from the server
-                    server.SendFrame("Hi Back");
-
-                    // Receive the response from the client socket
-                    string m2 = client.ReceiveFrameString();
-                    _consumerApplicationService.ProcessMessage($"From Server: {m2}");
+                    while (true)
+                    {
+                        string messageTopicReceived = subSocket.ReceiveFrameString();
+                        string messageReceived = subSocket.ReceiveFrameString();
+                        _consumerApplicationService.ProcessMessage(messageReceived);
+                    }
                 }
             }
             catch (Exception ex)

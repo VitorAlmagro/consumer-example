@@ -1,14 +1,20 @@
 ﻿using Consumer.ApplicationService.Interface;
-using System;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Consumer.ApplicationService
 {
     public class ConsumerApplicationService : IConsumerApplicationService
     {
+        private readonly ILogger<ConsumerApplicationService> _log;
+
+        public ConsumerApplicationService(ILogger<ConsumerApplicationService> log)
+        {
+            _log = log;
+        }
+
         public void ProcessMessage(string message)
         {
-            Console.WriteLine($"MESSAGE {message}");
+            _log.LogInformation($"Message received: {message}");
         }
     }
 }
